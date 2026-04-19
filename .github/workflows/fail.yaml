@@ -1,0 +1,10 @@
+# GitHub-এ এই file বানান
+# .github/workflows/test-fail.yml
+
+name: Test Fail
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: exit 1
