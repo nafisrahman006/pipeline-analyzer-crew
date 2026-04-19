@@ -151,6 +151,28 @@ class OpenPullRequestTool(BaseTool):
                 sha=base_ref.commit.sha
             )
 
+        # fix file commit করুন
+        try:
+            repo.create_file(
+                path="fixes/auto-fix.md",
+                message=f"fix: automated fix for {title}",
+                content=f"# Auto Fix\n\n{body}",
+                branch=branch
+            )
+        except Exception:
+            # file already exist করলে update করুন
+            try:
+                existing = repo.get_contents("fixes/auto-fix.md", ref=branch)
+                repo.update_file(
+                    path="fixes/auto-fix.md",
+                    message=f"fix: update automated fix for {title}",
+                    content=f"# Auto Fix\n\n{body}",
+                    sha=existing.sha,
+                    branch=branch
+                )
+            except Exception:
+                pass
+
         # PR খুলুন
         try:
             pr = repo.create_pull(

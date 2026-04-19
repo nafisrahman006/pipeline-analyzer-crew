@@ -1,13 +1,19 @@
 from crewai import Task
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+GITHUB_REPO = os.getenv("GITHUB_REPO", "owner/repo")
 
 
 def create_tasks(agents: dict) -> list[Task]:
-    """Create and return all pipeline analyzer tasks."""
 
     # ── Task 1: Detect Failures ──────────────────────────────────────────────
     detect_failures = Task(
         description=(
-            "Fetch the latest failed CI/CD pipeline runs from GitHub. "
+            f"Fetch the latest failed CI/CD pipeline runs from GitHub repository {GITHUB_REPO}. "
+            "Use the fetch_failed_pipeline_runs tool with this exact repo name. "
             "For each failure, extract: run ID, workflow name, branch, "
             "commit SHA, and when it failed. Return a structured list "
             "of the top 3 most recent failures."
@@ -22,9 +28,11 @@ def create_tasks(agents: dict) -> list[Task]:
     # ── Task 2: Analyze Logs ─────────────────────────────────────────────────
     analyze_logs = Task(
         description=(
-            "For each failed run identified in the previous task, "
-            "fetch its logs and perform deep analysis. "
-            "Identify: (1) the exact failing step, (2) the error message, "
+            f"For each failed run from repository {GITHUB_REPO} identified in the previous task, "
+            "fetch its logs using the fetch_run_logs tool with the run_id. "
+            "Perform deep analysis and identify: "
+            "(1) the exact failing step, "
+            "(2) the error message, "
             "(3) the root cause category (test failure / build error / "
             "infra issue / dependency conflict / secret/env issue). "
             "Be specific — quote the exact error from the logs."
@@ -60,7 +68,9 @@ def create_tasks(agents: dict) -> list[Task]:
     # ── Task 4: Open PR ──────────────────────────────────────────────────────
     open_pr = Task(
         description=(
-            "Using the fix proposal, open a GitHub Pull Request. "
+            f"Using the fix proposal, open a GitHub Pull Request on repository {GITHUB_REPO}. "
+            "Use the open_pull_request tool. "
+            "Use branch name: 'auto-fix/pipeline-fix'. "
             "Title format: 'fix: [workflow_name] <short description>'. "
             "PR body must include: "
             "- ## Problem: what failed and why. "

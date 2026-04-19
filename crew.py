@@ -42,7 +42,7 @@ load_dotenv()
 def build_crew() -> Crew:
 
     llm = LLM(
-        model="openai/gpt-oss-120b:free",
+        model="openrouter/openai/gpt-oss-120b:free",
         api_key=os.getenv("OPENROUTER_API_KEY"),
         base_url="https://openrouter.ai/api/v1",
         temperature=0.2,
