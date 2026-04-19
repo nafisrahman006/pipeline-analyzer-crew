@@ -355,6 +355,7 @@ llm = LLM(
     base_url="https://openrouter.ai/api/v1",
     temperature=0.2,
 )
+```
 
 
 ## Stack
