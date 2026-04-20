@@ -1,8 +1,12 @@
-# GitHub-এ এই file বানান
-# .github/workflows/test-fail.yml
-
 name: Test Fail
-on: push
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - fixes/**
+
 jobs:
   build:
     runs-on: ubuntu-latest

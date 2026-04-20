@@ -1,6 +1,6 @@
 # Autonomous CI/CD Pipeline Analyzer
 
-> A 5-agent CrewAI system that detects pipeline failures, analyzes root causes, proposes fixes, opens pull requests, and notifies the team — automatically.
+A 5-agent CrewAI system that detects pipeline failures, analyzes root causes, proposes fixes, opens pull requests, and notifies the team — automatically.
 
 ---
 

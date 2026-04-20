@@ -138,34 +138,34 @@ class OpenPullRequestTool(BaseTool):
         g = Github(os.getenv("GITHUB_TOKEN"))
         repo = g.get_repo(os.getenv("GITHUB_REPO"))
 
-        # base branch-এর latest commit নিন
+        
         base_ref = repo.get_branch(base)
 
-        # branch আছে কিনা চেক করুন
+    
         try:
             repo.get_branch(branch)
         except Exception:
-            # না থাকলে নতুন branch বানান
+            
             repo.create_git_ref(
                 ref=f"refs/heads/{branch}",
                 sha=base_ref.commit.sha
             )
 
-        # fix file commit করুন
+        
         try:
             repo.create_file(
                 path="fixes/auto-fix.md",
-                message=f"fix: automated fix for {title}",
+                message=f"fix: automated fix for {title} [skip ci]",
                 content=f"# Auto Fix\n\n{body}",
                 branch=branch
             )
         except Exception:
-            # file already exist করলে update করুন
+            
             try:
                 existing = repo.get_contents("fixes/auto-fix.md", ref=branch)
                 repo.update_file(
                     path="fixes/auto-fix.md",
-                    message=f"fix: update automated fix for {title}",
+                    message=f"fix: update automated fix for {title} [skip ci]",
                     content=f"# Auto Fix\n\n{body}",
                     sha=existing.sha,
                     branch=branch
@@ -173,7 +173,7 @@ class OpenPullRequestTool(BaseTool):
             except Exception:
                 pass
 
-        # PR খুলুন
+        
         try:
             pr = repo.create_pull(
                 title=title,

@@ -26,6 +26,26 @@ def create_tasks(agents: dict) -> list[Task]:
     )
 
     # ── Task 2: Analyze Logs ─────────────────────────────────────────────────
+    # analyze_logs = Task(
+    #     description=(
+    #         f"For each failed run from repository {GITHUB_REPO} identified in the previous task, "
+    #         "fetch its logs using the fetch_run_logs tool with the run_id. "
+    #         "Perform deep analysis and identify: "
+    #         "(1) the exact failing step, "
+    #         "(2) the error message, "
+    #         "(3) the root cause category. "
+    #         "CRITICAL INSTRUCTIONS: "
+    #         "- Only report on files and errors explicitly mentioned in the fetched logs. "
+    #         "- If a log only shows 'exit 1' without a specific error message, report it as a 'Manually Triggered Failure' or 'Generic Shell Exit'. "
+    #         "- DO NOT assume or invent file names (like calculator.test.js) if they are not in the logs."
+    # ),
+    #     expected_output=(
+    #         "A detailed analysis report for each run including the failing step, "
+    #         "the verbatim error log snippet, and a logical root cause. "
+    #         "If no specific error is found, state: 'No specific error detail found in logs'."
+    #     ),
+    #     agent=agents["log_analyzer"], # Ensure this matches your agents dict
+    # )
     analyze_logs = Task(
         description=(
             f"For each failed run from repository {GITHUB_REPO} identified in the previous task, "
