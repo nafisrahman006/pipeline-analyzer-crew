@@ -9,116 +9,72 @@ GITHUB_REPO = os.getenv("GITHUB_REPO", "owner/repo")
 
 def create_tasks(agents: dict) -> list[Task]:
 
-    # ── Task 1: Detect Failures ──────────────────────────────────────────────
     detect_failures = Task(
         description=(
-            f"Fetch the latest failed CI/CD pipeline runs from GitHub repository {GITHUB_REPO}. "
-            "Use the fetch_failed_pipeline_runs tool with this exact repo name. "
-            "For each failure, extract: run ID, workflow name, branch, "
-            "commit SHA, and when it failed. Return a structured list "
-            "of the top 3 most recent failures."
+            f"Call fetch_failed_pipeline_runs tool now. "
+            f"Repository: {GITHUB_REPO}. "
+            f"Return the run_ids of the top 3 failed runs."
         ),
-        expected_output=(
-            "A structured list of failed pipeline runs with: "
-            "run_id, workflow_name, branch, commit_sha, failed_at, run_url."
-        ),
+        expected_output="List of run_ids with workflow name and branch.",
         agent=agents["pipeline_monitor"],
     )
 
-    # ── Task 2: Analyze Logs ─────────────────────────────────────────────────
-    # analyze_logs = Task(
-    #     description=(
-    #         f"For each failed run from repository {GITHUB_REPO} identified in the previous task, "
-    #         "fetch its logs using the fetch_run_logs tool with the run_id. "
-    #         "Perform deep analysis and identify: "
-    #         "(1) the exact failing step, "
-    #         "(2) the error message, "
-    #         "(3) the root cause category. "
-    #         "CRITICAL INSTRUCTIONS: "
-    #         "- Only report on files and errors explicitly mentioned in the fetched logs. "
-    #         "- If a log only shows 'exit 1' without a specific error message, report it as a 'Manually Triggered Failure' or 'Generic Shell Exit'. "
-    #         "- DO NOT assume or invent file names (like calculator.test.js) if they are not in the logs."
-    # ),
-    #     expected_output=(
-    #         "A detailed analysis report for each run including the failing step, "
-    #         "the verbatim error log snippet, and a logical root cause. "
-    #         "If no specific error is found, state: 'No specific error detail found in logs'."
-    #     ),
-    #     agent=agents["log_analyzer"], # Ensure this matches your agents dict
-    # )
     analyze_logs = Task(
         description=(
-            f"For EACH run_id from the previous task output, "
-            f"call fetch_run_logs tool with that run_id immediately. "
-            f"MANDATORY: Tool must be called before any analysis. "
-            f"Copy the EXACT error text from tool output only. "
-            f"If tool returns no errors, write: No errors found in log. "
-            f"FORBIDDEN: Do not write any error that is not in tool output."
+            "You must call fetch_run_logs tool for each run_id. "
+            "Step 1: Take the first run_id from previous task. "
+            "Step 2: Call fetch_run_logs with that run_id RIGHT NOW. "
+            "Step 3: Copy the EXACT output from the tool. "
+            "Step 4: Do NOT add anything the tool did not return. "
+            "Step 5: If tool returns 'No logs', write exactly that. "
+            "RULE: Zero tool calls = invalid response."
         ),
         expected_output=(
-            "Actual error lines from the tool output. "
-            "Exact copy of error lines from tool output. "
-            "Nothing added, nothing assumed."
+            "Exact tool output only. "
+            "Format: run_id, exact error lines from tool."
         ),
         agent=agents["log_analyzer"],
         context=[detect_failures],
     )
-    # ── Task 3: Suggest Fix ──────────────────────────────────────────────────
+
     fix_suggestion = Task(
         description=(
-            "Based on the root cause analysis, propose a concrete fix. "
-            "Your output must include: "
-            "1. A clear description of the fix. "
-            "2. The exact file(s) to change (e.g. .github/workflows/ci.yml). "
-            "3. A before/after code diff or YAML patch. "
-            "4. Estimated confidence level (High/Medium/Low). "
-            "If the fix is infrastructure-related, suggest a runbook action."
+            "Read the exact error lines from log analysis. "
+            "RULE 1: Only fix what the log actually says. "
+            "RULE 2: If log says 'exit code 1' only — write: "
+            "'Log insufficient. Only exit code 1 found. "
+            "Manual investigation needed.' "
+            "RULE 3: Do NOT invent errors. "
+            "RULE 4: Do NOT suggest fixes for errors not in the log. "
+            "One fix per real error found."
         ),
         expected_output=(
-            "A fix proposal containing: fix_description, files_to_change, "
-            "code_diff (before/after), confidence_level, and optional runbook_steps."
+            "Fix only for errors found in log. "
+            "Or 'Log insufficient' if no specific error found."
         ),
         agent=agents["fix_suggester"],
         context=[analyze_logs],
     )
 
-    # ── Task 4: Open PR ──────────────────────────────────────────────────────
     open_pr = Task(
         description=(
-            f"Using the fix proposal, open a GitHub Pull Request on repository {GITHUB_REPO}. "
-            "Use the open_pull_request tool. "
-            "Use branch name: 'auto-fix/pipeline-fix'. "
-            "Title format: 'fix: [workflow_name] <short description>'. "
-            "PR body must include: "
-            "- ## Problem: what failed and why. "
-            "- ## Root Cause: from the log analysis. "
-            "- ## Fix: what was changed and why. "
-            "- ## Testing: how to verify the fix works. "
-            "- Link to the failed run URL."
+            f"Open a GitHub Pull Request on {GITHUB_REPO}. "
+            "Use open_pull_request tool. "
+            "Branch: 'auto-fix/pipeline-fix'. "
+            "Title: 'fix: [workflow_name] <short description>'. "
+            "Body must include: Problem, Root Cause, Fix, Testing."
         ),
-        expected_output=(
-            "Confirmation that PR was opened, including the PR URL and PR number."
-        ),
+        expected_output="PR URL.",
         agent=agents["pr_agent"],
         context=[analyze_logs, fix_suggestion],
     )
 
-    # ── Task 5: Notify Slack ─────────────────────────────────────────────────
     notify_slack = Task(
         description=(
-            "Send a Slack notification summarizing the incident. "
-            "Format the message as: "
-            "🚨 *Pipeline Failure Detected*\n"
-            "*Workflow:* <name>\n"
-            "*Branch:* <branch>\n"
-            "*Root Cause:* <1-line summary>\n"
-            "*Fix:* <1-line summary>\n"
-            "*PR:* <pr_url>\n"
-            "Keep it under 200 words. Use Slack markdown formatting."
+            "Send Slack notification with: "
+            "Workflow name, branch, root cause, fix summary, PR URL."
         ),
-        expected_output=(
-            "Confirmation that Slack notification was sent with the message content."
-        ),
+        expected_output="Slack message sent confirmation.",
         agent=agents["notifier"],
         context=[detect_failures, analyze_logs, fix_suggestion, open_pr],
     )
