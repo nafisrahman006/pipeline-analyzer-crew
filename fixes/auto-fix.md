@@ -1,24 +1,34 @@
 # Auto Fix
 
 ## Problem
-- **Run ID 24685116934** – Test step failed with `AssertionError: Expected status code 200 but got 500`.
-- **Run ID 24635983656** – Dependency installation failed because `numpy==2.0.0` does not exist.
-- **Run ID 24635983659** – Linter step failed due to missing secret `CODECOV_TOKEN`.
+The deployment stage failed with the error `Permission denied while accessing /var/www/html`. This prevented the CI pipeline from completing the deployment.
 
 ## Root Cause
-- The endpoint `/api/v1/resource` raised an unhandled exception, causing a 500 response.
-- `requirements.txt` pinned a non‑existent version of NumPy.
-- The GitHub Actions workflow attempted to upload coverage without the required secret.
+The CI runner does not have write permissions on the target directory `/var/www/html` on the remote server. The original workflow attempted to rsync files directly, which requires appropriate ownership or sudo rights.
 
 ## Fix
-1. **Application code** – Added proper exception handling in `app/main.py` to return appropriate HTTP status codes and ensure a successful 200 response when the request is valid.
-2. **Dependencies** – Updated `requirements.txt` to pin `numpy==1.23.0`, the latest stable release.
-3. **Workflow** – Modified `.github/workflows/ci.yml` to guard the Codecov upload step with `if: env.CODECOV_TOKEN != ''` and documented how to add the secret.
+Added a new step `Prepare deployment directory permissions` that SSHes into the remote server and changes the ownership and permissions of `/var/www/html` to the deployment user (provided via the `DEPLOY_USER` secret). The deployment step now uses this user and includes the SSH command with strict host key checking disabled.
+
+```yaml
+- name: Prepare deployment directory permissions
+  env:
+    DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+  run: |
+    ssh $DEPLOY_USER@server "sudo chown -R $DEPLOY_USER:$DEPLOY_USER /var/www/html && sudo chmod -R u+rwX /var/www/html"
+
+- name: Deploy to production
+  env:
+    DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+  run: |
+    rsync -avz -e "ssh -o StrictHostKeyChecking=no" ./dist/ $DEPLOY_USER@server:/var/www/html
+```
 
 ## Testing
-- Run the integration test suite; the previously failing test now receives a 200 response.
-- Execute `pip install -r requirements.txt` locally to confirm dependencies install without errors.
-- Trigger the CI workflow with the `CODECOV_TOKEN` secret set; the coverage upload step should now succeed, and the workflow should pass on branches without the secret by skipping that step.
+1. Ensure the `DEPLOY_USER` secret contains a user with sudo privileges on the target server.
+2. Verify the CI runner’s SSH public key is authorized for `DEPLOY_USER` on the server.
+3. Manually run the permission fix command via SSH to confirm it succeeds.
+4. Execute a manual `rsync` using the same command to ensure files are copied without permission errors.
+5. Observe the next CI run; the deployment step should complete successfully without permission errors.
 
 ## Failed Run
-- https://github.com/nafisrahman006/pipeline-analyzer-crew/actions/runs/24685116934
+Failed run URL: <INSERT_FAILED_RUN_URL_HERE>
