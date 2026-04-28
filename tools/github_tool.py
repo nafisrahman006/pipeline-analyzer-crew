@@ -119,7 +119,7 @@ class FetchRunLogsTool(BaseTool):
                     ])
 
                     if is_error and clean and len(clean) > 5:
-                        # GitHub timestamp remove করুন
+                        # GitHub timestamp remove 
                         if "Z " in clean:
                             clean = clean.split("Z ", 1)[-1]
                         error_lines.append(clean)
@@ -163,7 +163,7 @@ class OpenPullRequestTool(BaseTool):
         try:
             repo.get_branch(branch)
         except Exception:
-            # না থাকলে নতুন branch বানান
+           
             repo.create_git_ref(
                 ref=f"refs/heads/{branch}",
                 sha=base_ref.commit.sha
