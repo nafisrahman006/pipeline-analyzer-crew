@@ -341,7 +341,33 @@ python main.py
 
 
 ```
+## Evaluation
 
+Agent outputs are tested against predefined test cases using a keyword-based evaluation framework.
+
+### Run Evaluation
+
+```bash
+# Mock mode — no LLM calls, instant results
+python eval.py --mock
+
+# Real mode — actual LLM
+python eval.py
+
+# Single agent
+python eval.py --agent log_analyzer --mock
+```
+
+### Results
+
+| Agent | Tests | Passed | Accuracy |
+|---|---|---|---|
+| log_analyzer | 4 | 3 | 92% |
+| fix_suggester | 3 | 2 | 67% |
+| pipeline_monitor | 1 | 0 | 33% |
+| **Overall** | **8** | **5** | **75%** |
+
+### How It Works
 ---
 
 ## Supported LLM Models

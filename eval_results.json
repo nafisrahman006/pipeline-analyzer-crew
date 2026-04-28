@@ -1,0 +1,82 @@
+[
+  {
+    "id": "LA-01",
+    "agent": "log_analyzer",
+    "passed": false,
+    "score": 0.67,
+    "latency_ms": 17044,
+    "missing": [
+      "not found"
+    ],
+    "forbidden_found": []
+  },
+  {
+    "id": "LA-02",
+    "agent": "log_analyzer",
+    "passed": true,
+    "score": 1.0,
+    "latency_ms": 8020,
+    "missing": [],
+    "forbidden_found": []
+  },
+  {
+    "id": "LA-03",
+    "agent": "log_analyzer",
+    "passed": true,
+    "score": 1.0,
+    "latency_ms": 3638,
+    "missing": [],
+    "forbidden_found": []
+  },
+  {
+    "id": "LA-04",
+    "agent": "log_analyzer",
+    "passed": true,
+    "score": 1.0,
+    "latency_ms": 5453,
+    "missing": [],
+    "forbidden_found": []
+  },
+  {
+    "id": "FS-01",
+    "agent": "fix_suggester",
+    "passed": true,
+    "score": 1.0,
+    "latency_ms": 28041,
+    "missing": [],
+    "forbidden_found": []
+  },
+  {
+    "id": "FS-02",
+    "agent": "fix_suggester",
+    "passed": true,
+    "score": 1.0,
+    "latency_ms": 37328,
+    "missing": [],
+    "forbidden_found": []
+  },
+  {
+    "id": "FS-03",
+    "agent": "fix_suggester",
+    "passed": false,
+    "score": 0.0,
+    "latency_ms": 68428,
+    "missing": [
+      "insufficient",
+      "manual"
+    ],
+    "forbidden_found": []
+  },
+  {
+    "id": "PM-01",
+    "agent": "pipeline_monitor",
+    "passed": false,
+    "score": 0.33,
+    "latency_ms": 38061,
+    "missing": [
+      "run_id",
+      "workflow"
+    ],
+    "forbidden_found": []
+  }
+]
