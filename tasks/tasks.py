@@ -48,24 +48,21 @@ def create_tasks(agents: dict) -> list[Task]:
     # )
     analyze_logs = Task(
         description=(
-            f"For each failed run from repository {GITHUB_REPO} identified in the previous task, "
-            "fetch its logs using the fetch_run_logs tool with the run_id. "
-            "Perform deep analysis and identify: "
-            "(1) the exact failing step, "
-            "(2) the error message, "
-            "(3) the root cause category (test failure / build error / "
-            "infra issue / dependency conflict / secret/env issue). "
-            "Be specific — quote the exact error from the logs."
+            f"For EACH run_id from the previous task output, "
+            f"call fetch_run_logs tool with that run_id immediately. "
+            f"MANDATORY: Tool must be called before any analysis. "
+            f"Copy the EXACT error text from tool output only. "
+            f"If tool returns no errors, write: No errors found in log. "
+            f"FORBIDDEN: Do not write any error that is not in tool output."
         ),
         expected_output=(
-            "Root cause analysis report containing: run_id, failing_step, "
-            "error_message (quoted from logs), root_cause_category, "
-            "and a brief explanation of why this failure occurred."
+            "Actual error lines from the tool output. "
+            "Exact copy of error lines from tool output. "
+            "Nothing added, nothing assumed."
         ),
         agent=agents["log_analyzer"],
         context=[detect_failures],
     )
-
     # ── Task 3: Suggest Fix ──────────────────────────────────────────────────
     fix_suggestion = Task(
         description=(

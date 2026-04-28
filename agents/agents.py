@@ -25,21 +25,39 @@ def create_agents(llm) -> dict:
     )
 
     # ── 2. Log Analyzer ──────────────────────────────────────────────────────
+    # log_analyzer = Agent(
+    #     role="Log Analyzer",
+    #     goal=(
+    #         "Parse raw CI/CD logs, identify the exact error messages and "
+    #         "failed steps, and determine the root cause of each failure. "
+    #         "Distinguish between infra issues, test failures, and code bugs."
+    #     ),
+    #     backstory=(
+    #         "You are a forensic log expert with 10+ years of debugging pipelines. "
+    #         "You can read thousands of lines of logs and instantly spot the "
+    #         "signal in the noise. You categorize failures precisely."
+    #     ),
+    #     tools=[FetchRunLogsTool()],
+    #     llm=llm,
+    #     verbose=True,
+    # )
     log_analyzer = Agent(
         role="Log Analyzer",
         goal=(
-            "Parse raw CI/CD logs, identify the exact error messages and "
-            "failed steps, and determine the root cause of each failure. "
-            "Distinguish between infra issues, test failures, and code bugs."
+            "ALWAYS call fetch_run_logs tool for EVERY run_id. "
+            "NEVER respond without calling the tool. "
+            "If you skip the tool call, your answer is wrong."
         ),
         backstory=(
-            "You are a forensic log expert with 10+ years of debugging pipelines. "
-            "You can read thousands of lines of logs and instantly spot the "
-            "signal in the noise. You categorize failures precisely."
+            "You only trust data from the fetch_run_logs tool. "
+            "You never guess, never fabricate, never assume. "
+            "No tool call = no answer."
         ),
         tools=[FetchRunLogsTool()],
         llm=llm,
-        verbose=True,
+        verbose=False,
+        max_iter=3,
+        max_retry_limit=1,
     )
 
     # ── 3. Fix Suggester ─────────────────────────────────────────────────────
