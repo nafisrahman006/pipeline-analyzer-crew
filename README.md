@@ -219,47 +219,6 @@ PR:         github.com/org/repo/pull/42
 
 ---
 
-## Security — Does the AI access GitHub directly?
-
-**No.** The token never leaves the local machine.
-
-```mermaid
-flowchart LR
-    subgraph LOCAL ["Local Machine"]
-        ENV[".env\nGITHUB_TOKEN"]
-        PG[PyGithub]
-        FILTER[Filter:\nfailed steps only]
-    end
-
-    subgraph AI ["AI Model"]
-        LLM[LLM]
-    end
-
-    subgraph GH ["GitHub API"]
-        API[REST API]
-    end
-
-    ENV --> PG
-    PG -->|API call| API
-    API -->|raw response| FILTER
-    FILTER -->|filtered string| LLM
-    LLM -->|decision| PG
-
-    style LOCAL fill:#EAF3DE,color:#27500A
-    style AI fill:#EEEDFE,color:#26215C
-    style GH fill:#E6F1FB,color:#0C447C
-```
-
-| What | Who sees it |
-|---|---|
-| `GITHUB_TOKEN` | Local machine only |
-| Raw API response | Local machine only |
-| Source code | Local machine only |
-| Filtered log string | AI model |
-| PR title and body | AI model (it writes these) |
-
----
-
 ## Agent Sequence
 
 ```mermaid
@@ -367,10 +326,9 @@ python eval.py --agent log_analyzer --mock
 | pipeline_monitor | 1 | 0 | 33% |
 | **Overall** | **8** | **5** | **75%** |
 
-### How It Works
 ---
 
-## Supported LLM Models
+<!-- ## Supported LLM Models
 
 Change model in `crew.py`:
 
@@ -381,7 +339,7 @@ llm = LLM(
     base_url="https://openrouter.ai/api/v1",
     temperature=0.2,
 )
-```
+``` -->
 
 
 ## Stack
