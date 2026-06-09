@@ -323,7 +323,6 @@ llm = LLM(
 | [CrewAI](https://crewai.com) | Multi-agent orchestration |
 | [OpenRouter](https://openrouter.ai) | Free LLM API |
 | [PyGithub](https://pygithub.readthedocs.io) | GitHub API access |
-| [python-dotenv](https://pypi.org/project/python-dotenv) | Environment variables |
 
 ---
 
